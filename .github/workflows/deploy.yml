@@ -27,7 +27,7 @@ jobs:
           script: |
             cd /home/ubuntu/github-action-spring
             git pull origin main
-            cd github-action-spring
+            cd github-action-server
             chmod +x gradlew
             ./gradlew clean build
             sudo fuser -k 8080/tcp || true
