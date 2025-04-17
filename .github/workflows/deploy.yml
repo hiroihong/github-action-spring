@@ -1,0 +1,34 @@
+name: Deploy To EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  #job의 이름
+  Deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH(원격 접속)로 EC2에 접속하기
+        #github에서 재공하는 라이브러리를 사용하는법이 uses
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          # script_stop: true는 스크립트가 실패하면 SSH 연결을 종료합니다.
+          script_stop: true
+          #ec2에 접속해서 해당 디렉토리로 이동
+          #git에서 소스 취득
+          #gradle를 빌드
+          #8080 포트의 프로세스가 실행중이면 끄고 실행중이 아니라도 에러로 취급하지 마
+          #jar를 실행해
+          script: |
+            cd /home/ubuntu/github-action-spring
+            git pull origin main
+            cd github-action-spring
+            chmod +x gradlew
+            ./gradlew clean build
+            sudo fuser -k 8080/tcp || true
+            nohup java -jar build/libs/*SNAPSHOT.jar > app.log 2>&1 &
